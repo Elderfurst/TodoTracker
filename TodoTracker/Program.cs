@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.CommandLineUtils;
 using System;
+using System.IO;
 using System.Reflection;
 
 namespace TodoTracker
@@ -20,8 +21,22 @@ namespace TodoTracker
                 return string.Format("Version {0}", Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
             });
 
+            var directoryOption = app.Option("-d|--directory <directory>",
+                    "The Directory to scan, defaults to the current directory if not specified",
+                    CommandOptionType.SingleValue);
+
             app.OnExecute(() =>
             {
+                var directory = Directory.GetCurrentDirectory();
+                if (directoryOption.HasValue())
+                {
+                    directory = directoryOption.Value();
+                }
+
+                var scanner = new Scanner(directory);
+                var outputFileLocation = scanner.Scan();
+
+                Console.WriteLine(string.Format("Output file containing TODOs located here: {0}", outputFileLocation));
                 return 0;
             });
 
